@@ -43,7 +43,12 @@ async def root():
 
 @app.get("/chat")
 async def chat_ui():
-    html_content = """
+    try:
+        with open("templates/index.html", "r", encoding="utf-8") as f:
+            html_content = f.read()
+        return HTMLResponse(content=html_content)
+    except Exception as e:
+        return HTMLResponse(content=f"<h1>Error loading template: {str(e)}</h1>", status_code=500)
 <!DOCTYPE html>
 <html>
 <head>
