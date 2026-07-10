@@ -1,11 +1,10 @@
 # voice.py - Voice Input for Sido AI (English & Swahili)
 import os
 import tempfile
-import base64
 from datetime import datetime
 
-# Note: For full voice features, install these:
-# pip install speechrecognition pyaudio pygame gtts
+# Note: For full voice features, install:
+# pip install gtts pygame speechrecognition pyaudio pyttsx3
 
 class VoiceAssistant:
     def __init__(self):
@@ -16,21 +15,19 @@ class VoiceAssistant:
         }
     
     def text_to_speech(self, text: str, language: str = "sw"):
-        """Convert text to speech (simplified version)"""
+        """Convert text to speech - works without base64"""
         try:
-            # Try to import gTTS
+            # Try gTTS first
             try:
                 from gtts import gTTS
                 import pygame
                 
                 tts = gTTS(text=text, lang=language, slow=False)
                 
-                # Save to temporary file
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp:
                     filename = tmp.name
                     tts.save(filename)
                 
-                # Play audio
                 pygame.mixer.init()
                 pygame.mixer.music.load(filename)
                 pygame.mixer.music.play()
@@ -38,14 +35,21 @@ class VoiceAssistant:
                 while pygame.mixer.music.get_busy():
                     continue
                 
-                # Cleanup
                 os.remove(filename)
                 return "🔊 Audio played successfully!"
                 
             except ImportError:
-                return """
+                # Fallback to pyttsx3 (offline, no internet required)
+                try:
+                    import pyttsx3
+                    engine = pyttsx3.init()
+                    engine.say(text)
+                    engine.runAndWait()
+                    return "🔊 Audio played successfully (offline mode)!"
+                except ImportError:
+                    return """
 ⚠️ **Voice features not fully installed.**
 
 To enable voice features, install:
 ```bash
-pip install gtts pygame speechrecognition pyaudio
+pip install gtts pygame speechrecognition pyaudio pyttsx3

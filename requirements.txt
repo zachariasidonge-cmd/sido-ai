@@ -14,5 +14,4 @@ pyaudio
 pygame
 gtts
 python-multipart
-base64
-json
+pyttsx3
