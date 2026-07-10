@@ -662,3 +662,77 @@ Try:
 
 💡 Supported languages: English, Swahili
 """
+# ---------- M-PESA PAYMENT TOOL ----------
+def mpesa_payment_tool(user_input: str) -> str:
+    """Process M-Pesa payment with till 9305680"""
+    import re
+    
+    # Clean the input
+    clean_input = user_input.replace(",", "").strip()
+    
+    # Try to find phone number (0712345678, 254712345678, or 7XXXXXXXX)
+    phone_match = re.search(r'(07\d{8}|2547\d{8}|7\d{8})', clean_input)
+    if not phone_match:
+        return """
+📱 **M-Pesa Payment**
+
+To make a payment, please provide:
+1. **Phone number** (e.g., 0712345678 or 254712345678)
+2. **Amount** in KSh
+
+**Example:** `Pay KSh 500 to 0712345678`
+
+My Till Number is **9305680**.
+
+💡 You'll receive an M-Pesa prompt on your phone to confirm the payment.
+"""
+    
+    # Extract phone number
+    phone = phone_match.group(0)
+    
+    # Try to find amount (numbers not part of phone)
+    remaining = re.sub(r'(07\d{8}|2547\d{8}|7\d{8})', '', clean_input)
+    amount_match = re.search(r'(\d+)', remaining)
+    
+    if not amount_match:
+        return f"""
+📱 **Payment Details**
+
+**Phone:** {phone}
+**Till Number:** 9305680
+
+⚠️ **Amount not specified.**
+
+Please specify the amount you want to pay.
+Example: `Pay KSh 500 to 0712345678`
+"""
+    
+    amount = float(amount_match.group(0))
+    
+    # Check if amount is too low
+    if amount < 1:
+        return "❌ Amount must be at least KSh 1"
+    
+    # Process the payment using mpesa.py
+    try:
+        from mpesa import process_payment
+        result = process_payment(phone, amount, "SidoAI")
+        return result
+    except ImportError:
+        # Fallback if mpesa.py not available
+        return f"""
+💰 **M-Pesa Payment Request**
+
+**Amount:** KSh {amount:,.2f}
+**Phone:** {phone}
+**Till Number:** 9305680
+
+📱 **Please check your phone NOW:**
+1. You will receive an M-Pesa prompt
+2. Enter your PIN to confirm
+3. Wait for confirmation SMS
+
+*Note: Payment request expires in 2 minutes.*
+"""
+    except Exception as e:
+        return f"⚠️ Payment error: {str(e)}"
