@@ -1,11 +1,21 @@
-# agent.py - Complete Sido AI Agent with All Tools
+# agent.py - Simplified version without langchain.agents (works on Render)
 import os
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
-from langchain.agents import create_agent
-from langchain.tools import Tool
-from langchain.memory import ConversationBufferMemory
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+
+load_dotenv()
+
+# Initialize the LLM with Groq
+llm = ChatGroq(
+    groq_api_key=os.getenv("GROQ_API_KEY"),
+    model_name="llama-3.3-70b-versatile",
+    temperature=0.7
+)
+
+# Simple memory - store chat history
+chat_history = []
+
+# Import tool functions directly for use in responses
 from tools import (
     business_plan_tool,
     cv_writer_tool,
@@ -21,40 +31,47 @@ from tools import (
     county_permit_tool
 )
 
-load_dotenv()
+# Map keywords to tool functions
+TOOL_MAP = {
+    "business plan": business_plan_tool,
+    "cv": cv_writer_tool,
+    "invoice": invoice_generator_tool,
+    "proposal": proposal_writer_tool,
+    "marketing": marketing_writer_tool,
+    "tender": tender_finder_tool,
+    "job": job_finder_tool,
+    "search": web_search_tool,
+    "register": business_registration_tool,
+    "registration": business_registration_tool,
+    "tax": kra_tax_tool,
+    "calculate tax": kra_tax_tool,
+    "price": market_prices_tool,
+    "market": market_prices_tool,
+    "permit": county_permit_tool,
+    "county": county_permit_tool
+}
 
-# Initialize the LLM with Groq
-llm = ChatGroq(
-    groq_api_key=os.getenv("GROQ_API_KEY"),
-    model_name="llama-3.3-70b-versatile",
-    temperature=0.7
-)
+def detect_tool(user_input: str):
+    """Detect which tool to use based on keywords"""
+    input_lower = user_input.lower()
+    for keyword, tool_func in TOOL_MAP.items():
+        if keyword in input_lower:
+            return tool_func
+    return None
 
-# Define all available tools
-tools = [
-    Tool(name="BusinessPlanGenerator", func=business_plan_tool, description="Generate a complete business plan for any Kenyan business idea"),
-    Tool(name="CVWriter", func=cv_writer_tool, description="Write or optimize a CV/Resume for Kenyan job market"),
-    Tool(name="InvoiceGenerator", func=invoice_generator_tool, description="Create a professional invoice in KSh"),
-    Tool(name="ProposalWriter", func=proposal_writer_tool, description="Write a business or tender proposal"),
-    Tool(name="MarketingWriter", func=marketing_writer_tool, description="Create marketing content for social media, emails, or ads"),
-    Tool(name="TenderFinder", func=tender_finder_tool, description="Find latest Kenyan government and corporate tenders"),
-    Tool(name="JobFinder", func=job_finder_tool, description="Find job opportunities in Kenya"),
-    Tool(name="WebSearch", func=web_search_tool, description="Search the web for general business information"),
-    Tool(name="BusinessRegistration", func=business_registration_tool, description="Step-by-step guide to register a business in Kenya"),
-    Tool(name="KRATaxCalculator", func=kra_tax_tool, description="Calculate PAYE, NHIF, NSSF, and other Kenyan taxes"),
-    Tool(name="MarketPrices", func=market_prices_tool, description="Get current market prices for common goods in Kenya"),
-    Tool(name="CountyPermits", func=county_permit_tool, description="Get business permit requirements for Kenyan counties")
-]
-
-# Memory - remember conversation
-memory = ConversationBufferMemory(
-    memory_key="chat_history",
-    return_messages=True
-)
-
-# Custom prompt for Kenyan context
-prompt = ChatPromptTemplate.from_messages([
-    ("system", """You are Sido AI, Kenya's smartest digital business assistant.
+def get_response(user_input: str) -> str:
+    """Main entry point for Sido AI"""
+    try:
+        # Check if we should use a specific tool
+        tool_func = detect_tool(user_input)
+        
+        if tool_func:
+            # Use the tool directly
+            return tool_func(user_input)
+        
+        # Otherwise, use the LLM for general conversation
+        messages = [
+            {"role": "system", "content": """You are Sido AI, Kenya's smartest digital business assistant.
 Your mission: Help Kenyans start, run, and grow businesses.
 
 Guidelines:
@@ -63,35 +80,27 @@ Guidelines:
 - Suggest the next step after every response
 - Use Swahili phrases occasionally (like 'Habari', 'Karibu', 'Sawa', 'Asante')
 - Be concise but thorough
-- If someone asks for a business plan, CV, invoice, proposal, tax calculation, market prices, county permits, or business registration - use the appropriate tool
+- If someone asks for a business plan, CV, invoice, proposal, tax calculation, market prices, county permits, or business registration - provide a comprehensive Kenyan-focused response
 - Be friendly and encouraging
 
-Remember: You're helping Kenyan entrepreneurs, freelancers, and job seekers!"""),
-    MessagesPlaceholder(variable_name="chat_history"),
-    ("user", "{input}"),
-    MessagesPlaceholder(variable_name="agent_scratchpad")
-])
-
-# Create the agent
-agent = create_agent(llm, tools, prompt)
-
-# Create the executor
-agent_executor = AgentExecutor(
-    agent=agent,
-    tools=tools,
-    memory=memory,
-    verbose=True,
-    handle_parsing_errors=True,
-    max_iterations=5
-)
-
-def get_response(user_input: str) -> str:
-    """Main entry point for Sido AI"""
-    try:
-        response = agent_executor.invoke({
-            "input": user_input
-        })
-        return response.get("output", "Sorry, I couldn't process that.")
+Remember: You're helping Kenyan entrepreneurs, freelancers, and job seekers!"""}
+        ]
+        
+        # Add chat history (last 10 messages)
+        for msg in chat_history[-10:]:
+            messages.append(msg)
+        
+        # Add current message
+        messages.append({"role": "user", "content": user_input})
+        
+        # Get response from Groq
+        response = llm.invoke(messages)
+        
+        # Save to history
+        chat_history.append({"role": "user", "content": user_input})
+        chat_history.append({"role": "assistant", "content": response.content})
+        
+        return response.content
     except Exception as e:
         return f"⚠️ Error: {str(e)}"
 

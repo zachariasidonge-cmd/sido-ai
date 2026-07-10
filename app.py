@@ -7,6 +7,7 @@ from agent import get_response
 from datetime import datetime
 from typing import Optional
 import uvicorn
+import os
 
 app = FastAPI(title="Sido AI - Kenyan Business Assistant")
 
@@ -43,11 +44,19 @@ async def root():
 @app.get("/chat")
 async def chat_ui():
     try:
-        with open("templates/index.html", "r", encoding="utf-8") as f:
-            html_content = f.read()
-        return HTMLResponse(content=html_content)
+        # Check if templates/index.html exists
+        if os.path.exists("templates/index.html"):
+            with open("templates/index.html", "r", encoding="utf-8") as f:
+                html_content = f.read()
+            return HTMLResponse(content=html_content)
+        else:
+            return HTMLResponse(content="""
+            <h1>🇰🇪 Sido AI</h1>
+            <p>Template file not found. Please create templates/index.html</p>
+            """, status_code=404)
     except Exception as e:
         return HTMLResponse(content=f"<h1>Error loading template: {str(e)}</h1>", status_code=500)
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
