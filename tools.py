@@ -638,7 +638,7 @@ Example: `Pay KSh 500 to 0712345678`
 
 **Amount:** KSh {amount:,.2f}
 **Phone:** {phone}
-**Till Number:** 9305680
+**Till Number:** 4057685
 
 📱 **Please check your phone NOW:**
 1. You will receive an M-Pesa prompt
