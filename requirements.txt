@@ -9,9 +9,4 @@ requests
 beautifulsoup4
 fpdf
 twilio
-speechrecognition
-pyaudio
-pygame
-gtts
 python-multipart
-pyttsx3

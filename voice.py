@@ -1,10 +1,7 @@
-# voice.py - Voice Input for Sido AI (English & Swahili)
+# voice.py - Voice Input for Sido AI (Optional Features)
 import os
 import tempfile
 from datetime import datetime
-
-# Note: For full voice features, install:
-# pip install gtts pygame speechrecognition pyaudio pyttsx3
 
 class VoiceAssistant:
     def __init__(self):
@@ -13,43 +10,60 @@ class VoiceAssistant:
             "swahili": "sw-KE",
             "sw-ke": "sw-KE"
         }
+        self.voice_available = self._check_voice_availability()
+    
+    def _check_voice_availability(self):
+        """Check if voice features are available"""
+        try:
+            import gtts
+            import pygame
+            return True
+        except ImportError:
+            return False
     
     def text_to_speech(self, text: str, language: str = "sw"):
-        """Convert text to speech - works without base64"""
-        try:
-            # Try gTTS first
-            try:
-                from gtts import gTTS
-                import pygame
-                
-                tts = gTTS(text=text, lang=language, slow=False)
-                
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp:
-                    filename = tmp.name
-                    tts.save(filename)
-                
-                pygame.mixer.init()
-                pygame.mixer.music.load(filename)
-                pygame.mixer.music.play()
-                
-                while pygame.mixer.music.get_busy():
-                    continue
-                
-                os.remove(filename)
-                return "🔊 Audio played successfully!"
-                
-            except ImportError:
-                # Fallback to pyttsx3 (offline, no internet required)
-                try:
-                    import pyttsx3
-                    engine = pyttsx3.init()
-                    engine.say(text)
-                    engine.runAndWait()
-                    return "🔊 Audio played successfully (offline mode)!"
-                except ImportError:
-                    return """
-⚠️ **Voice features not fully installed.**
+        """Convert text to speech - optional feature"""
+        if not self.voice_available:
+            return """
+🔊 **Voice features are optional.**
 
-To enable voice features, install:
+Voice features (gTTS, pygame, pyaudio) can be installed locally but are not required for Sido AI to work.
+
+💡 **Voice is available locally**, but for the web version, text responses work perfectly.
+
+**Try these features instead:**
+- "Speak Habari" (will work locally with audio libraries)
+- Regular text responses work everywhere
+"""
+        
+        try:
+            from gtts import gTTS
+            import pygame
+            
+            tts = gTTS(text=text, lang=language, slow=False)
+            
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp:
+                filename = tmp.name
+                tts.save(filename)
+            
+            pygame.mixer.init()
+            pygame.mixer.music.load(filename)
+            pygame.mixer.music.play()
+            
+            while pygame.mixer.music.get_busy():
+                continue
+            
+            os.remove(filename)
+            return "🔊 Audio played successfully!"
+            
+        except Exception as e:
+            return f"⚠️ Voice error: {str(e)}"
+    
+    def speech_to_text(self, language: str = "sw-KE"):
+        """Convert speech to text - optional feature"""
+        return """
+🎤 **Voice input is optional.**
+
+For voice input, install locally:
 ```bash
-pip install gtts pygame speechrecognition pyaudio pyttsx3
+pip install speechrecognition pyaudio
