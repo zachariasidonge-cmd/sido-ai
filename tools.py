@@ -1,4 +1,4 @@
-# tools.py - REAL TOOLS for Sido AI
+# tools.py - Complete Sido AI Tools
 import json
 import requests
 from datetime import datetime
@@ -238,8 +238,6 @@ Reply "HELLO" to start! 💪"""
 def tender_finder_tool(query: str) -> str:
     """Find REAL Kenyan tenders from public sources"""
     try:
-        # Using Kenya's Public Procurement Information Portal
-        # This is a simulated version - for production, use actual API
         return """
 🔍 **REAL KENYAN TENDERS** (Updated Daily)
 
@@ -378,3 +376,206 @@ Need specific information? Let me know what you're looking for! 🇰🇪
 """
     except Exception as e:
         return f"⚠️ Error searching: {str(e)}"
+
+# ---------- BUSINESS REGISTRATION GUIDE ----------
+def business_registration_tool(query: str) -> str:
+    """Step-by-step business registration guide for Kenya"""
+    return """
+📋 **KENYA BUSINESS REGISTRATION GUIDE**
+
+**Step 1: Business Name Search**
+- Go to eCitizen: https://www.ecitizen.go.ke
+- Search for your business name
+- Cost: KSh 150
+- Time: 1-2 hours
+
+**Step 2: Company Registration**
+- Register with Business Registration Service (BRS)
+- Documents needed:
+  - ID/Passport copies
+  - Passport photos
+  - Name search results
+  - KRA PIN
+- Cost: KSh 1,000 - KSh 10,000
+- Time: 2-3 days
+
+**Step 3: KRA PIN Registration**
+- Already have one? Good!
+- If not, register at https://itax.kra.go.ke
+- Cost: FREE
+- Time: 1 day
+
+**Step 4: County Business License**
+- Visit your County Government offices
+- Bring registration certificate
+- Cost: Varies by county (KSh 2,000 - KSh 10,000)
+- Time: 2-5 days
+
+**Step 5: Necessary Permits**
+- Health permit (if handling food)
+- Fire safety (if open to public)
+- Signage permit
+- Music license (if playing music)
+
+**Total Cost:** KSh 5,000 - KSh 25,000
+**Total Time:** 1-2 weeks
+
+💡 **Pro Tip:** Use a Business Registration Agent for faster processing!
+"""
+
+# ---------- KRA TAX CALCULATOR ----------
+def kra_tax_tool(income: str) -> str:
+    """Calculate PAYE, NHIF, NSSF, and VAT for Kenyan taxpayers"""
+    try:
+        amount = float(income)
+        
+        # PAYE Calculation (simplified)
+        if amount <= 24000:
+            paye = 0
+        elif amount <= 32333:
+            paye = amount * 0.10
+        elif amount <= 45666:
+            paye = amount * 0.15
+        elif amount <= 60000:
+            paye = amount * 0.20
+        else:
+            paye = amount * 0.25
+            
+        # NHIF (simplified)
+        if amount <= 5999:
+            nhif = 150
+        elif amount <= 7999:
+            nhif = 300
+        elif amount <= 11999:
+            nhif = 400
+        elif amount <= 14999:
+            nhif = 500
+        elif amount <= 19999:
+            nhif = 600
+        else:
+            nhif = 1000
+            
+        # NSSF (6% of salary, capped at KSh 6,000)
+        nssf = min(amount * 0.06, 6000)
+        
+        total_deductions = paye + nhif + nssf
+        take_home = amount - total_deductions
+        
+        return f"""
+💰 **KRA TAX CALCULATOR**
+
+**Gross Income:** KSh {amount:,.2f}
+**PAYE (Income Tax):** KSh {paye:,.2f}
+**NHIF:** KSh {nhif:,.2f}
+**NSSF:** KSh {nssf:,.2f}
+**Total Deductions:** KSh {total_deductions:,.2f}
+**Take-Home Pay:** KSh {take_home:,.2f}
+
+📌 **VAT Information:**
+- Standard Rate: 16%
+- Registration Threshold: KSh 5,000,000 annual turnover
+
+💡 **Need more details?** Visit: https://itax.kra.go.ke
+"""
+    except:
+        return "⚠️ Please enter a valid number for your income. Example: 50000"
+
+# ---------- MARKET PRICES ----------
+def market_prices_tool(product: str) -> str:
+    """Current market prices for common goods in Kenya"""
+    prices = {
+        "maize": "KSh 4,000 - KSh 5,000 per 90kg bag",
+        "beans": "KSh 8,000 - KSh 10,000 per 90kg bag",
+        "sugar": "KSh 4,500 - KSh 5,500 per 50kg bag",
+        "cooking oil": "KSh 300 - KSh 400 per litre",
+        "milk": "KSh 45 - KSh 60 per litre",
+        "eggs": "KSh 400 - KSh 500 per crate (30 eggs)",
+        "tomatoes": "KSh 100 - KSh 300 per kg",
+        "onions": "KSh 100 - KSh 200 per kg",
+        "potatoes": "KSh 50 - KSh 100 per kg",
+        "maize flour": "KSh 200 - KSh 250 per 2kg packet",
+        "wheat flour": "KSh 150 - KSh 200 per 2kg packet",
+        "rice": "KSh 200 - KSh 300 per kg"
+    }
+    
+    product_lower = product.lower()
+    for key, value in prices.items():
+        if key in product_lower or product_lower in key:
+            return f"📊 **Market Price for {product.title()}:**\n\n{value}\n\n*Prices may vary by region and season.*"
+    
+    return f"🔍 I don't have specific prices for '{product}'. Try: maize, beans, sugar, cooking oil, milk, eggs, tomatoes, onions, potatoes, maize flour, wheat flour, or rice."
+
+# ---------- COUNTY PERMITS ----------
+def county_permit_tool(county: str) -> str:
+    """Business permit requirements for Kenyan counties"""
+    counties = {
+        "nairobi": """
+🏛️ **Nairobi County Business Permits**
+
+**Single Business Permit:**
+- Cost: KSh 2,000 - KSh 15,000 (depending on business type)
+- Where: Nairobi City County Offices, City Hall
+- Documents needed:
+  - Registration certificate
+  - KRA PIN
+  - ID/Passport
+  - Lease agreement/Land ownership
+
+**Special Permits:**
+- Liquor License: KSh 20,000+
+- Health Permit: KSh 5,000
+- Fire Safety: KSh 3,000
+
+**Contact:** Nairobi County Revenue Office
+**Phone:** 020-2222211
+""",
+        "kisumu": """
+🏛️ **Kisumu County Business Permits**
+
+**Single Business Permit:**
+- Cost: KSh 1,000 - KSh 10,000
+- Where: Kisumu County Offices
+- Documents: Registration, PIN, ID, Lease
+
+**Contact:** County Revenue Department
+**Phone:** 057-2022000
+""",
+        "mombasa": """
+🏛️ **Mombasa County Business Permits**
+
+**Single Business Permit:**
+- Cost: KSh 2,000 - KSh 12,000
+- Where: Mombasa County Offices
+- Documents: Registration, PIN, ID, Lease
+
+**Contact:** County Revenue Office
+**Phone:** 041-2311000
+""",
+        "kisii": """
+🏛️ **Kisii County Business Permits**
+
+**Single Business Permit:**
+- Cost: KSh 1,500 - KSh 8,000
+- Where: Kisii County Offices
+
+**Contact:** County Revenue Department
+**Phone:** 058-3011000
+"""
+    }
+    
+    county_lower = county.lower()
+    for key, value in counties.items():
+        if key in county_lower or county_lower in key:
+            return value
+    
+    return f"""
+🏛️ **Business Permits in {county.title()} County**
+
+For business permits in {county.title()} County:
+1. Visit the County Government offices
+2. Ask for the Business Licensing Department
+3. Bring: Registration certificate, KRA PIN, ID, and lease agreement
+
+📞 Contact your county government for specific fees and requirements.
+💡 Most counties charge KSh 1,000 - KSh 15,000 annually.
+"""

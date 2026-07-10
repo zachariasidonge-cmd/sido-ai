@@ -40,23 +40,38 @@
             transition: all 0.3s ease;
         }
         
-        /* ===== HEADER ===== */
+        /* ===== HEADER WITH KENYAN FLAG COLORS ===== */
         .header {
-            background: linear-gradient(135deg, #0d1f0d, #1a3a1a);
+            background: linear-gradient(135deg, #1a1a1a, #006600);
             padding: 22px 24px 18px;
             text-align: center;
-            border-bottom: 1px solid rgba(0, 255, 0, 0.08);
+            border-bottom: 2px solid #c8102e;
             position: relative;
+        }
+        
+        .header::before {
+            content: '🇰🇪';
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 28px;
+            animation: wave 3s ease-in-out infinite;
+        }
+        
+        @keyframes wave {
+            0%, 100% { transform: translateY(-50%) rotate(0deg); }
+            50% { transform: translateY(-50%) rotate(15deg); }
         }
         
         .header::after {
             content: '';
             position: absolute;
-            bottom: 0;
-            left: 20%;
-            right: 20%;
+            bottom: -2px;
+            left: 15%;
+            right: 15%;
             height: 2px;
-            background: linear-gradient(90deg, transparent, #00cc00, transparent);
+            background: linear-gradient(90deg, transparent, #ffd700, transparent);
             border-radius: 2px;
         }
         
@@ -65,17 +80,6 @@
             font-size: clamp(24px, 6vw, 32px);
             font-weight: 800;
             letter-spacing: -0.5px;
-        }
-        
-        .header .flag {
-            display: inline-block;
-            animation: wave 2s ease-in-out infinite;
-        }
-        
-        @keyframes wave {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(10deg); }
-            75% { transform: rotate(-10deg); }
         }
         
         .header .subtitle {
@@ -350,7 +354,8 @@
             body { padding: 8px; }
             .chat-container { border-radius: 18px; }
             .header { padding: 18px 18px 14px; }
-            .messages { padding: 14px 12px 10px; }
+            .header::before { font-size: 20px; left: 10px; }
+            .messages { padding: 14px 12px 10px; height: clamp(300px, 50vh, 400px); }
             .suggestions { padding: 8px 12px 12px; gap: 5px; }
             .input-area { padding: 10px 12px 14px; gap: 8px; }
             .input-area input { padding: 10px 14px; }
@@ -361,6 +366,7 @@
         @media (max-width: 380px) {
             .suggestions button { font-size: 10px; padding: 4px 10px; }
             .header h1 { font-size: 20px; }
+            .header::before { display: none; }
         }
         
         @media (min-width: 768px) {
@@ -394,9 +400,7 @@
     <div class="chat-container">
         <!-- HEADER -->
         <div class="header">
-            <h1>
-                <span class="flag">🇰🇪</span> Sido AI
-            </h1>
+            <h1>Sido AI</h1>
             <div class="subtitle">Kenya's Smartest Business Assistant</div>
             <div class="status-badge">● Powered by Groq AI</div>
         </div>
@@ -428,6 +432,12 @@
             </button>
             <button onclick="quickQuestion('How do I register a business in Kenya?')">
                 <span class="icon">📋</span> Register
+            </button>
+            <button onclick="quickQuestion('Calculate tax for KSh 50,000')">
+                <span class="icon">💰</span> Tax
+            </button>
+            <button onclick="quickQuestion('What is the price of maize?')">
+                <span class="icon">📊</span> Prices
             </button>
         </div>
 
@@ -476,7 +486,6 @@
         }
 
         function formatMessage(text) {
-            // Convert line breaks to <br>
             return text.replace(/\n/g, '<br>');
         }
 
@@ -484,7 +493,6 @@
             const message = userInput.value.trim();
             if (!message) return;
 
-            // Add user message
             messagesDiv.innerHTML += `
                 <div class="message user">
                     ${formatMessage(message)}
@@ -493,7 +501,6 @@
             userInput.value = '';
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-            // Show typing indicator
             addTypingIndicator();
 
             try {
@@ -524,7 +531,6 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
 
-        // Enter key support
         userInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -532,7 +538,6 @@
             }
         });
 
-        // Auto-focus input on load
         window.addEventListener('load', function() {
             userInput.focus();
         });
