@@ -429,7 +429,6 @@ def kra_tax_tool(income: str) -> str:
     try:
         amount = float(income)
         
-        # PAYE Calculation (simplified)
         if amount <= 24000:
             paye = 0
         elif amount <= 32333:
@@ -441,7 +440,6 @@ def kra_tax_tool(income: str) -> str:
         else:
             paye = amount * 0.25
             
-        # NHIF (simplified)
         if amount <= 5999:
             nhif = 150
         elif amount <= 7999:
@@ -455,7 +453,6 @@ def kra_tax_tool(income: str) -> str:
         else:
             nhif = 1000
             
-        # NSSF (6% of salary, capped at KSh 6,000)
         nssf = min(amount * 0.06, 6000)
         
         total_deductions = paye + nhif + nssf
@@ -579,90 +576,8 @@ For business permits in {county.title()} County:
 📞 Contact your county government for specific fees and requirements.
 💡 Most counties charge KSh 1,000 - KSh 15,000 annually.
 """
-# ---------- M-PESA PAYMENT ----------
-def mpesa_payment_tool(user_input: str) -> str:
-    """Process M-Pesa payment with till 9305680"""
-    # Parse phone and amount from input
-    import re
-    
-    # Try to find phone number (0712345678 or 254712345678)
-    phone_match = re.search(r'(07\d{8}|2547\d{8}|7\d{8})', user_input)
-    if not phone_match:
-        return """
-📱 **M-Pesa Payment**
 
-To make a payment, provide:
-- Phone number (e.g., 0712345678)
-- Amount in KSh
-
-**Example:** "Pay KSh 500 to 0712345678"
-
-My Till Number is **9305680**.
-Please include your phone number and amount.
-"""
-    
-    # Try to find amount
-    amount_match = re.search(r'(\d+)', user_input.replace(phone_match.group(0), ''))
-    if not amount_match:
-        return f"📱 Please specify the amount. Phone: {phone_match.group(0)}"
-    
-    phone = phone_match.group(0)
-    amount = float(amount_match.group(0))
-    
-    # Process payment
-    from mpesa import process_payment
-    return process_payment(phone, amount, "SidoAI")
-
-# ---------- PDF EXPORT ----------
-def pdf_export_tool(user_input: str) -> str:
-    """Generate a PDF from Sido AI content"""
-    from pdf_export import generate_pdf
-    
-    # Check what type of PDF to generate
-    if "invoice" in user_input.lower():
-        invoice_data = {
-            "invoice_no": f"INV-{datetime.now().strftime('%Y%m%d')}-001",
-            "date": datetime.now().strftime('%d/%m/%Y'),
-            "due_date": datetime.now().strftime('%d/%m/%Y'),
-            "client": "Client Name",
-            "client_address": "Client Address",
-            "items": [
-                {"desc": "Consultation Services", "qty": 1, "rate": 10000}
-            ]
-        }
-        return generate_pdf("invoice", invoice_data)
-    else:
-        # Default to business plan
-        business_data = {
-            "name": "Business Plan",
-            "content": user_input
-        }
-        return generate_pdf("business_plan", business_data)
-
-# ---------- VOICE INPUT ----------
-def voice_input_tool(user_input: str) -> str:
-    """Process voice input in English or Swahili"""
-    from voice import speak_response, listen_for_input
-    
-    if "speak" in user_input.lower():
-        # Extract text to speak
-        text = user_input.replace("speak", "").strip()
-        if not text:
-            return "🔊 What would you like me to say?"
-        return speak_response(text, "sw")
-    elif "listen" in user_input.lower():
-        return listen_for_input("sw-KE")
-    else:
-        return """
-🎤 **Voice Commands**
-
-Try:
-- "Speak [your text]" - Text to speech in Swahili
-- "Listen" - Start voice input (microphone required)
-
-💡 Supported languages: English, Swahili
-"""
-# ---------- M-PESA PAYMENT TOOL ----------
+# ---------- M-PESA PAYMENT TOOL (SINGLE VERSION) ----------
 def mpesa_payment_tool(user_input: str) -> str:
     """Process M-Pesa payment with till 9305680"""
     import re
@@ -709,7 +624,6 @@ Example: `Pay KSh 500 to 0712345678`
     
     amount = float(amount_match.group(0))
     
-    # Check if amount is too low
     if amount < 1:
         return "❌ Amount must be at least KSh 1"
     
@@ -719,7 +633,6 @@ Example: `Pay KSh 500 to 0712345678`
         result = process_payment(phone, amount, "SidoAI")
         return result
     except ImportError:
-        # Fallback if mpesa.py not available
         return f"""
 💰 **M-Pesa Payment Request**
 
@@ -736,3 +649,56 @@ Example: `Pay KSh 500 to 0712345678`
 """
     except Exception as e:
         return f"⚠️ Payment error: {str(e)}"
+
+# ---------- PDF EXPORT ----------
+def pdf_export_tool(user_input: str) -> str:
+    """Generate a PDF from Sido AI content"""
+    try:
+        from pdf_export import generate_pdf
+    except ImportError:
+        return "⚠️ PDF export module not available. Please install fpdf."
+    
+    if "invoice" in user_input.lower():
+        invoice_data = {
+            "invoice_no": f"INV-{datetime.now().strftime('%Y%m%d')}-001",
+            "date": datetime.now().strftime('%d/%m/%Y'),
+            "due_date": datetime.now().strftime('%d/%m/%Y'),
+            "client": "Client Name",
+            "client_address": "Client Address",
+            "items": [
+                {"desc": "Consultation Services", "qty": 1, "rate": 10000}
+            ]
+        }
+        return generate_pdf("invoice", invoice_data)
+    else:
+        business_data = {
+            "name": "Business Plan",
+            "content": user_input
+        }
+        return generate_pdf("business_plan", business_data)
+
+# ---------- VOICE INPUT ----------
+def voice_input_tool(user_input: str) -> str:
+    """Process voice input in English or Swahili"""
+    try:
+        from voice import speak_response, listen_for_input
+    except ImportError:
+        return "⚠️ Voice module not available. Voice features are optional."
+    
+    if "speak" in user_input.lower():
+        text = user_input.replace("speak", "").strip()
+        if not text:
+            return "🔊 What would you like me to say?"
+        return speak_response(text, "sw")
+    elif "listen" in user_input.lower():
+        return listen_for_input("sw-KE")
+    else:
+        return """
+🎤 **Voice Commands**
+
+Try:
+- "Speak [your text]" - Text to speech in Swahili
+- "Listen" - Start voice input (microphone required)
+
+💡 Supported languages: English, Swahili
+"""
