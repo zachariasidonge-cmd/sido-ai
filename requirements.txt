@@ -7,3 +7,12 @@ langchain-core
 pydantic
 requests
 beautifulsoup4
+fpdf
+twilio
+speechrecognition
+pyaudio
+pygame
+gtts
+python-multipart
+base64
+json
